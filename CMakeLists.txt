@@ -3,6 +3,7 @@ project(D2rModEditor)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
 
 # 一般性配置
 set(TARGET_NAME d2rModEditor)
@@ -18,7 +19,8 @@ file(
   GLOB_RECURSE
   SOURCE_FILES
   "src/*.cpp",
-  "vendored/imgui/*.cpp"
+  "vendored/imgui/*.cpp",
+  "vendored/sqlite/*.c",
 )
 target_sources(
   ${TARGET_NAME} PRIVATE
@@ -34,4 +36,5 @@ target_include_directories(
   ${TARGET_NAME} PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/vendored/imgui/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/vendored/sqlite/include
 )
