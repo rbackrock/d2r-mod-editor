@@ -1,18 +1,25 @@
 cmake_minimum_required(VERSION 3.29.9)
 project(D2rModEditor)
 
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
-
-# 一般性配置
-set(TARGET_NAME d2rModEditor)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 set(SDLTTF_VENDORED ON)
+set(TARGET_NAME d2rModEditor)
 
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
+add_subdirectory(vendored/spdlog EXCLUDE_FROM_ALL)
 
 add_executable(
   ${TARGET_NAME}
+)
+
+# 开发环境添加 -DDEBUG_MODE
+target_compile_definitions(
+  ${TARGET_NAME}
+  PRIVATE
+  "$<$<CONFIG:Debug>:DEBUG_MODE>"
 )
 
 file(
@@ -30,6 +37,7 @@ target_sources(
 target_link_libraries(
   ${TARGET_NAME} PRIVATE
   SDL3::SDL3
+  spdlog::spdlog
 )
 
 target_include_directories(
