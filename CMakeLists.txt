@@ -1,15 +1,20 @@
 cmake_minimum_required(VERSION 3.29.9)
 project(D2rModEditor)
 
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 set(SDLTTF_VENDORED ON)
 set(TARGET_NAME d2rModEditor)
+set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources")
 
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendored/spdlog EXCLUDE_FROM_ALL)
+
+add_custom_target(copy_resources ALL
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${RESOURCES_DIR}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources"
+  COMMENT "Copying resources directory to build directory"
+)
 
 add_executable(
   ${TARGET_NAME}
