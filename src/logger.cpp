@@ -1,6 +1,6 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
-#include "logger_manager.h"
+#include "logger.h"
 
 void init_logger() {
   #ifdef DEBUG_MODE

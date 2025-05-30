@@ -12,4 +12,7 @@ git clone https://github.com/libsdl-org/SDL.git vendored/SDL
 
 # spdlog
 git clone https://github.com/gabime/spdlog.git vendored/spdlog
+
+# nlohmann_json
+git clone https://github.com/nlohmann/json.git vendored/nlohmann_json
 ```
