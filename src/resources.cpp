@@ -1,94 +1,102 @@
-#include <format>
 #include <iostream>
+#include <format>
 #include <filesystem>
 #include <string>
 #include <vector>
 #include <fstream>
+#include <iterator>
+#include <regex>
 #include <nlohmann/json.hpp>
 #include "constants.h"
 #include "spdlog/spdlog.h"
 #include "resources.h"
 
-std::vector<std::string> get_official_strings_files() {
-  std::vector<std::string> filenames;
-  const std::string strings_directory = DiabloModEditor::Resources::Constants::RESOURCES_OFFICIAL_STRINGS_DIRECTORY_PATH;
-
-  for (const auto& entry : std::filesystem::directory_iterator(strings_directory)) {
-    if (entry.is_regular_file()) {
-      const std::string filename = entry.path().filename().string();
-      filenames.push_back(filename);
-      spdlog::info(filename);
-    }
-  }
-
-  return filenames;
-}
-
-std::vector<std::string> get_json_covert_to_sql() {
-  std::vector<std::string> sql_list;
-
+static std::string json_file_covert_to_sql(const std::string& file_path, const std::string& file_name) {
+  std::string sql_str = "";
   std::ifstream f(DiabloModEditor::Resources::Constants::RESOURCES_OFFICIAL_STRINGS_DIRECTORY_PATH + "/item-names.json");
-  nlohmann::json item_names_json = nlohmann::json::parse(f);
+  // 确保迭代得时候，对象属性顺序和原始文件一致
+  nlohmann::ordered_json item_names_json = nlohmann::ordered_json::parse(f);
 
-  // if (!item_names_json.empty()) {
-  //   const auto begin_item = item_names_json.begin();
-  // }
+  if (!item_names_json.empty() && item_names_json.is_array()) {
+    std::string sql_table_name = std::regex_replace(file_name, std::regex("-"), "_");
+    
+    std::string sql_create_table_prefix = std::format("CREATE TABLE {} ( ", sql_table_name);
+    std::string sql_create_table_content = "";
+    std::string sql_create_table_suffix = " );";
+    std::string sql_insert_prefix = std::format("INSERT INTO {} VALUES ( ", sql_table_name);
+    std::string sql_insert_content = "";
+    std::string sql_insert_suffix = " );";
+    std::string sql_col_data_type = "";
 
-  // if (item_names_json.size() > 0) {
-  //   const auto row = item_names_json[0];
-  //   for (const auto& item : row.items()) {
-  //     spdlog::info(item.key());
-  //   }
-  // }
-
-  // for (const auto& row : item_names_json) {
-  // }
-
-  std::string sql_str;
-  for (int i = 0; i < item_names_json.size(); i++) {
-    const auto& row = item_names_json[i];
-
-    if (i == 0) {
-      // 创建建表 SQL 语句
-      sql_str.append("CREATE TABLE table_name(");
-      sql_str.append("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ");
-      for (const auto& it : row.items()) {
-        const std::string key = it.key();
-        const std::string val = it.value();
-        // const auto val_type = it.value().type();
-        std::string val_sql_type = "TEXT";
-
-        // if (val_type == nlohmann::json::value_t::number_integer) {
-        //   val_sql_type = "INTEGER";
-        // }
-
-        // sql_str.append(std::format("{} {},", key, ""));
-        // if (it == row.items().end()) {
-        //   sql_str.append(std::format("{} {}", key, ""));
-        // }
-
-        // spdlog::info(std::format("{}-{}", key, val));
+    // 拿第一个元素用于创建 SQL 表语句
+    auto frist_element = item_names_json[0];
+    for (auto frist_element_item = frist_element.begin(); frist_element_item != frist_element.end(); frist_element_item++) {
+      const auto value_type = frist_element_item.value().type();
+      if (value_type == nlohmann::json::value_t::number_integer || value_type == nlohmann::json::value_t::number_unsigned) {
+        sql_col_data_type = "INTEGER";
+      } else if (value_type == nlohmann::json::value_t::string) {
+        sql_col_data_type = "TEXT";
       }
-      sql_str.append(");");
 
-      spdlog::info(sql_str);
+      sql_create_table_content.append(
+        std::format(
+          "{} {} ",
+          frist_element_item.key(),
+          sql_col_data_type
+        )
+      );
+
+      if (std::next(frist_element_item) != frist_element.end()) {
+        sql_create_table_content.append(", ");
+      }
     }
-    // spdlog::info(row["zhCN"]);
+
+    sql_str.append(sql_create_table_prefix);
+    sql_str.append(sql_create_table_content);
+    sql_str.append(sql_create_table_suffix);
+
+    // 创建 sql 插入语句
+    for (auto& element : item_names_json) {
+      const auto items = element.items();
+
+      for (auto it = items.begin(); it != items.end(); it++) {
+        if (it.value().is_number()) {
+          const int value = it.value();
+          sql_insert_content.append(std::format(" {} ", value));
+        } else if (it.value().is_string()) {
+          const std::string value = it.value();
+          sql_insert_content.append(std::format("'{}'", value));
+        }
+
+        if (std::next(it) != items.end()) {
+          sql_insert_content.append(", ");
+        }
+      }
+
+      sql_str.append(sql_insert_prefix);
+      sql_str.append(sql_insert_content);
+      sql_str.append(sql_insert_suffix);
+      sql_insert_content.clear();
+    }
   }
 
-  return sql_list;
+  return sql_str;
 }
 
-std::vector<std::string> get_strings_directory_files_convert_to_sql_string() {
-  std::vector<std::string> sql_strs;
-  const std::string strings_directory = DiabloModEditor::Resources::Constants::RESOURCES_OFFICIAL_STRINGS_DIRECTORY_PATH;
-  
+std::string get_strings_directory_files_convert_to_sql_string() {
+  const std::filesystem::path strings_directory = DiabloModEditor::Resources::Constants::RESOURCES_OFFICIAL_STRINGS_DIRECTORY_PATH;
+
   for (const auto& entry : std::filesystem::directory_iterator(strings_directory)) {
     if (entry.is_regular_file()) {
+      const std::string full_file_path = entry.path().string();
       const std::string filename = entry.path().stem().string();
-      spdlog::info(filename);
+
+      std::string sql_str = json_file_covert_to_sql(full_file_path, filename);
+      spdlog::info(sql_str);
+
+      break;
     }
   }
 
-  return sql_strs;
+  return "";
 }

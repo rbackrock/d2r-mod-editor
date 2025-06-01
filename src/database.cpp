@@ -20,8 +20,8 @@ bool init_database() {
     }
   }
 
-  get_json_covert_to_sql();
-  // get_strings_directory_files_convert_to_sql_string();
+  // json_file_covert_to_sql("");
+  get_strings_directory_files_convert_to_sql_string();
 
   return true;
 }
