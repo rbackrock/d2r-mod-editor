@@ -13,13 +13,16 @@
 
 static std::string json_file_covert_to_sql(const std::string& file_path, const std::string& file_name) {
   std::string sql_str = "";
-  std::ifstream f(DiabloModEditor::Resources::Constants::RESOURCES_OFFICIAL_STRINGS_DIRECTORY_PATH + "/item-names.json");
-  // 确保迭代得时候，对象属性顺序和原始文件一致
+  std::ifstream f(file_path);
+  // 确保迭代的时候，对象属性顺序和原始文件一致
   nlohmann::ordered_json item_names_json = nlohmann::ordered_json::parse(f);
 
   if (!item_names_json.empty() && item_names_json.is_array()) {
-    std::string sql_table_name = std::regex_replace(file_name, std::regex("-"), "_");
-    
+    std::string sql_table_name = std::format(
+      "{}_{}",
+      DiabloModEditor::Resources::Constants::STRINGS_TABLE_NAME_PREFIX,
+      std::regex_replace(file_name, std::regex("-"), "_")
+    );
     std::string sql_create_table_prefix = std::format("CREATE TABLE {} ( ", sql_table_name);
     std::string sql_create_table_content = "";
     std::string sql_create_table_suffix = " );";
@@ -28,7 +31,7 @@ static std::string json_file_covert_to_sql(const std::string& file_path, const s
     std::string sql_insert_suffix = " );";
     std::string sql_col_data_type = "";
 
-    // 拿第一个元素用于创建 SQL 表语句
+    // 拿第一个元素用于建表 SQL 语句
     auto frist_element = item_names_json[0];
     for (auto frist_element_item = frist_element.begin(); frist_element_item != frist_element.end(); frist_element_item++) {
       const auto value_type = frist_element_item.value().type();
@@ -65,7 +68,9 @@ static std::string json_file_covert_to_sql(const std::string& file_path, const s
           sql_insert_content.append(std::format(" {} ", value));
         } else if (it.value().is_string()) {
           const std::string value = it.value();
-          sql_insert_content.append(std::format("'{}'", value));
+          // 处理如果有 ' 符号的情况
+          const std::string process_value = std::regex_replace(value, std::regex("'"), "''");
+          sql_insert_content.append(std::format("'{}'", process_value));
         }
 
         if (std::next(it) != items.end()) {
@@ -85,18 +90,16 @@ static std::string json_file_covert_to_sql(const std::string& file_path, const s
 
 std::string get_strings_directory_files_convert_to_sql_string() {
   const std::filesystem::path strings_directory = DiabloModEditor::Resources::Constants::RESOURCES_OFFICIAL_STRINGS_DIRECTORY_PATH;
+  std::string sql_str = "";
 
   for (const auto& entry : std::filesystem::directory_iterator(strings_directory)) {
     if (entry.is_regular_file()) {
       const std::string full_file_path = entry.path().string();
       const std::string filename = entry.path().stem().string();
 
-      std::string sql_str = json_file_covert_to_sql(full_file_path, filename);
-      spdlog::info(sql_str);
-
-      break;
+      sql_str.append(json_file_covert_to_sql(full_file_path, filename));
     }
   }
 
-  return "";
+  return sql_str;
 }

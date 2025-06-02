@@ -7,21 +7,35 @@
 #include "constants.h"
 #include "database.h"
 #include "resources.h"
+#include "sqlite_manager.h"
 
 bool init_database() {
-  if (std::filesystem::exists(DiabloModEditor::Resources::Constants::OFFICIAL_DB_FILENAME) == false) {
-    sqlite3* official_db;
+  const std::string db_filename = DiabloModEditor::Resources::Constants::OFFICIAL_DB_FILENAME;
+  try {
+    if (std::filesystem::exists(db_filename) == false) {
+      std::string strings_sql_str;
+      SQLiteDB db(db_filename.c_str());
 
-    const int official_data_open_result = sqlite3_open(DiabloModEditor::Resources::Constants::OFFICIAL_DB_FILENAME.c_str(), &official_db);
-    if (official_data_open_result == 1) {
-      spdlog::error("创建原始游戏数据数据库失败");
-      sqlite3_close(official_db);
-      return false;
+      strings_sql_str.append("BEGIN TRANSACTION;");
+      strings_sql_str.append(get_strings_directory_files_convert_to_sql_string());
+      strings_sql_str.append("COMMIT;");
+
+      db.execute(strings_sql_str);
     }
-  }
+  } catch (const std::exception& e) {
+    try {
+      std::filesystem::path remove_db_file_path = db_filename;
+      std::filesystem::remove(remove_db_file_path);
+    } catch (const std::filesystem::filesystem_error& e) {
+      spdlog::error(e.what());
+      std::cerr << "Error: " << e.what() << std::endl;
+    }
 
-  // json_file_covert_to_sql("");
-  get_strings_directory_files_convert_to_sql_string();
+    spdlog::error(e.what());
+    std::cerr << "Error: " << e.what() << std::endl;
+
+    return false;
+  }
 
   return true;
 }
