@@ -109,42 +109,42 @@ User parseUser(sqlite3_stmt *stmt)
       sqlite3_column_int(stmt, 2)};
 }
 
-int run()
-{
-  try
-  {
-    // 打开或创建数据库
-    SQLiteDB db("example.db");
+// int run()
+// {
+//   try
+//   {
+//     // 打开或创建数据库
+//     SQLiteDB db("example.db");
 
-    // 创建表
-    db.execute(R"(
-            CREATE TABLE IF NOT EXISTS Users (
-                id INTEGER PRIMARY KEY,
-                name TEXT,
-                age INTEGER
-            )
-        )");
+//     // 创建表
+//     db.execute(R"(
+//             CREATE TABLE IF NOT EXISTS Users (
+//                 id INTEGER PRIMARY KEY,
+//                 name TEXT,
+//                 age INTEGER
+//             )
+//         )");
 
-    // 插入数据
-    db.execute("INSERT INTO Users (name, age) VALUES ('Alice', 30)");
-    db.execute("INSERT INTO Users (name, age) VALUES ('Bob', 25)");
+//     // 插入数据
+//     db.execute("INSERT INTO Users (name, age) VALUES ('Alice', 30)");
+//     db.execute("INSERT INTO Users (name, age) VALUES ('Bob', 25)");
 
-    // 查询数据
-    auto users = db.query("SELECT id, name, age FROM Users", parseUser);
+//     // 查询数据
+//     auto users = db.query("SELECT id, name, age FROM Users", parseUser);
 
-    // 输出结果
-    for (const auto &user : users)
-    {
-      std::cout << "ID: " << user.id
-                << ", Name: " << user.name
-                << ", Age: " << user.age << std::endl;
-    }
-  }
-  catch (const std::exception &e)
-  {
-    std::cerr << "Error: " << e.what() << std::endl;
-    return 1;
-  }
+//     // 输出结果
+//     for (const auto &user : users)
+//     {
+//       std::cout << "ID: " << user.id
+//                 << ", Name: " << user.name
+//                 << ", Age: " << user.age << std::endl;
+//     }
+//   }
+//   catch (const std::exception &e)
+//   {
+//     std::cerr << "Error: " << e.what() << std::endl;
+//     return 1;
+//   }
 
-  return 0;
-}
+//   return 0;
+// }

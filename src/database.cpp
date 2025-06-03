@@ -14,13 +14,26 @@ bool init_database() {
   try {
     if (std::filesystem::exists(db_filename) == false) {
       std::string strings_sql_str;
+      std::string excel_sql_str;
       SQLiteDB db(db_filename.c_str());
 
+      /**
+       * 解析 resources/officialData/local/lng/strings 下的所有 json 文件将内容转换成 SQL 语句执行保存在数据库中
+       * 表名称以 strings_ 开头
+       */
       strings_sql_str.append("BEGIN TRANSACTION;");
       strings_sql_str.append(get_strings_directory_files_convert_to_sql_string());
       strings_sql_str.append("COMMIT;");
-
       db.execute(strings_sql_str);
+
+      /**
+       * 解析 resources/officialData/global/excel 下的所有 tsv 文件将内容转换成 SQL 语句执行保存在数据库中
+       * 表名称以 excel_ 开头
+       */
+      excel_sql_str.append("BEGIN TRANSACTION;");
+      excel_sql_str.append(get_excel_directory_files_convert_to_sql_string());
+      excel_sql_str.append("COMMIT;");
+      db.execute(excel_sql_str);
     }
   } catch (const std::exception& e) {
     try {
