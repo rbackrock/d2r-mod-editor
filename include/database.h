@@ -2,4 +2,7 @@
 #include <iostream>
 #include <string>
 
-bool init_database();
+namespace DiabloModEditor::DataBase {
+  bool init_database();
+}
+

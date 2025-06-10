@@ -1,3 +1,5 @@
 #pragma once
 
-void init_logger();
+namespace DiabloModEditor::Logger {
+  void init_logger();
+}

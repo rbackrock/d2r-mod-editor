@@ -2,7 +2,9 @@
 #include "logger.h"
 #include "database.h"
 
-void run() {
-  init_logger();
-  init_database();
+namespace DiabloModEditor {
+  void run() {
+    DiabloModEditor::Logger::init_logger();
+    DiabloModEditor::DataBase::init_database();
+  }
 }

@@ -1,3 +1,5 @@
 #pragma once
 
-void run();
+namespace DiabloModEditor {
+  void run();
+}

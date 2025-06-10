@@ -4,6 +4,6 @@
 
 int main()
 {
-  run();
+  DiabloModEditor::run();
   return 0;
 }
