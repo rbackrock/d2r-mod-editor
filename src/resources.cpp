@@ -7,9 +7,9 @@
 #include <iterator>
 #include <regex>
 #include <nlohmann/json.hpp>
-#include "constants.h"
+#include "constants.hpp"
 #include "spdlog/spdlog.h"
-#include "resources.h"
+#include "resources.hpp"
 
 namespace DiabloModEditor::Resources {
   static std::string json_file_covert_to_sql(const std::string& file_path, const std::string& file_name) {

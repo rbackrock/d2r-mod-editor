@@ -1,6 +1,6 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
-#include "logger.h"
+#include "logger.hpp"
 
 namespace DiabloModEditor::Logger {
   void init_logger() {

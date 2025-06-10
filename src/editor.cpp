@@ -1,6 +1,6 @@
-#include "editor.h"
-#include "logger.h"
-#include "database.h"
+#include "editor.hpp"
+#include "logger.hpp"
+#include "database.hpp"
 
 namespace DiabloModEditor {
   void run() {

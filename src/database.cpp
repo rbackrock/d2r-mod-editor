@@ -4,10 +4,10 @@
 #include <vector>
 #include "sqlite3.h"
 #include "spdlog/spdlog.h"
-#include "constants.h"
-#include "database.h"
-#include "resources.h"
-#include "sqlite_manager.h"
+#include "constants.hpp"
+#include "database.hpp"
+#include "resources.hpp"
+#include "sqlite_manager.hpp"
 namespace DiabloModEditor::DataBase {
   bool init_database() {
     const std::string db_filename = DiabloModEditor::Resources::Constants::OFFICIAL_DB_FILENAME;

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "editor.h"
+#include "editor.hpp"
 #include "sqlite3.h"
 
 int main()
